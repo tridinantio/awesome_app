@@ -105,11 +105,18 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    Widget noBackgroundImage() {
+      return Container(
+        color: greyColor,
+        child: Icon(Icons.broken_image),
+      );
+    }
+
     //BACKGROUND IMAGE IN THE SLIVER
     Widget backgroundImage() {
       return ClipRRect(
         child: CachedNetworkImage(
-          errorWidget: (context, url, error) => noConnectionMessage(),
+          errorWidget: (context, url, error) => noBackgroundImage(),
           progressIndicatorBuilder: (context, url, downloadProgress) => Center(
               child: CircularProgressIndicator(
                   color: greyColor, value: downloadProgress.progress)),
