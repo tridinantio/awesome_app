@@ -9,7 +9,7 @@
 </queries>
 <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="awesome_app"
+        android:label="Awesome App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
