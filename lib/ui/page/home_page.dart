@@ -8,6 +8,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
+import 'package:lottie/lottie.dart';
+import 'package:restart_app/restart_app.dart';
 
 import '../widget/photo_grid.dart';
 
@@ -73,11 +75,41 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    //WIDGET TO HANDLE NO CONNECTION
+    Widget noConnectionMessage() {
+      return Column(
+        children: [
+          SizedBox(
+              height: 220, width: 220, child: Lottie.asset("assets/no.json")),
+          SizedBox(
+            height: 10,
+          ),
+          Text(
+            "You are disconnected",
+            style: blackTextStyle,
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              Restart.restartApp(webOrigin: '/');
+            },
+            child: Text(
+              "Tap here to restart",
+              style: blackTextStyle.copyWith(color: activeColor),
+            ),
+          ),
+        ],
+      );
+    }
+
+    //BACKGROUND IMAGE IN THE SLIVER
     Widget backgroundImage() {
       return ClipRRect(
-        borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
         child: CachedNetworkImage(
+          errorWidget: (context, url, error) => noConnectionMessage(),
           progressIndicatorBuilder: (context, url, downloadProgress) => Center(
               child: CircularProgressIndicator(
                   color: greyColor, value: downloadProgress.progress)),
@@ -87,45 +119,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    Widget content() {
-      return BlocConsumer<PhotoCubit, PhotoState>(
-        listener: (context, state) {
-          // TODO: implement listener
-          if (state is PhotoSuccess) {
-            setState(() {
-              isLoading = false;
-            });
-          }
-        },
-        builder: (context, state) {
-          if (state is PhotoLoading) {
-            return loadingIndicator();
-          } else if (state is PhotoSuccess) {
-            if (listIsActive) {
-              return PhotoList(
-                photoList: state.photoList,
-              );
-            } else {
-              return PhotoGrid(
-                photoList: state.photoList,
-              );
-            }
-          } else {
-            return SliverList(
-              delegate:
-                  SliverChildBuilderDelegate((BuildContext context, int index) {
-                return Container(
-                  color: index.isOdd ? Colors.white : Colors.black12,
-                  height: 100.0,
-                  child: Center(child: Text("Gagal fetch foto")),
-                );
-              }, childCount: 1),
-            );
-          }
-        },
-      );
-    }
-
+    //ACTION ICONS/BUTTONS ON TOP RIGHT SIDE OF APPBAR
     Widget actionIcons() {
       return Row(
         children: [
@@ -164,6 +158,41 @@ class _HomePageState extends State<HomePage> {
             width: 16,
           ),
         ],
+      );
+    }
+
+    Widget content() {
+      return BlocConsumer<PhotoCubit, PhotoState>(
+        listener: (context, state) {
+          // LISTEN TO LOADING STATE OF THIS PAGE
+          if (state is PhotoSuccess) {
+            setState(() {
+              isLoading = false;
+            });
+          }
+        },
+        builder: (context, state) {
+          if (state is PhotoLoading) {
+            return loadingIndicator();
+          } else if (state is PhotoSuccess) {
+            if (listIsActive) {
+              return PhotoList(
+                photoList: state.photoList,
+              );
+            } else {
+              return PhotoGrid(
+                photoList: state.photoList,
+              );
+            }
+          } else {
+            return SliverList(
+              delegate:
+                  SliverChildBuilderDelegate((BuildContext context, int index) {
+                return noConnectionMessage();
+              }, childCount: 1),
+            );
+          }
+        },
       );
     }
 

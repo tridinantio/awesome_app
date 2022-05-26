@@ -24,12 +24,16 @@ class _PhotoGridCardState extends State<PhotoGridCard> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: CachedNetworkImage(
-          progressIndicatorBuilder: (context, url, downloadProgress) => Center(
-              child: CircularProgressIndicator(
-                  color: greyColor, value: downloadProgress.progress)),
-          imageUrl: widget.photo.src.medium,
-          fit: BoxFit.cover,
+        child: Hero(
+          tag: "photo${widget.photo.id}",
+          child: CachedNetworkImage(
+            progressIndicatorBuilder: (context, url, downloadProgress) =>
+                Center(
+                    child: CircularProgressIndicator(
+                        color: greyColor, value: downloadProgress.progress)),
+            imageUrl: widget.photo.src.medium,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
