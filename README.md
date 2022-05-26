@@ -9,7 +9,5 @@ Browse beautiful and curated photos from around the world!
 <img src="https://user-images.githubusercontent.com/93133790/170463821-167aa402-4848-4b1d-bdd6-7fbbbaadb4ca.jpg" width="400" height="900">
 
 
-
-
-
+# See the detail of the photos and get to know the photographer
 <img src="https://user-images.githubusercontent.com/93133790/170463963-924e4c9a-3352-4501-84d7-f248e0c98246.jpg" width="400" height="900">
