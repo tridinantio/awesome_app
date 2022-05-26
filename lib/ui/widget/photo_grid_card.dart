@@ -1,22 +1,21 @@
 import 'package:awesome_app/models/photo_model.dart';
+import 'package:awesome_app/shared/theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-class PhotoCard extends StatefulWidget {
+class PhotoGridCard extends StatefulWidget {
   final PhotoModel photo;
-  PhotoCard({Key? key, required this.photo}) : super(key: key);
+  PhotoGridCard({Key? key, required this.photo}) : super(key: key);
 
   @override
-  State<PhotoCard> createState() => _PhotoCardState();
+  State<PhotoGridCard> createState() => _PhotoGridCardState();
 }
 
-class _PhotoCardState extends State<PhotoCard> {
+class _PhotoGridCardState extends State<PhotoGridCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height / 4,
-      width: double.maxFinite,
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -28,8 +27,8 @@ class _PhotoCardState extends State<PhotoCard> {
         child: CachedNetworkImage(
           progressIndicatorBuilder: (context, url, downloadProgress) => Center(
               child: CircularProgressIndicator(
-                  color: Colors.grey, value: downloadProgress.progress)),
-          imageUrl: widget.photo.src.original,
+                  color: greyColor, value: downloadProgress.progress)),
+          imageUrl: widget.photo.src.medium,
           fit: BoxFit.cover,
         ),
       ),

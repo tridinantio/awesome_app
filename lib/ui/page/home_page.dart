@@ -1,10 +1,15 @@
 import 'package:awesome_app/cubit/cubit/photo_cubit.dart';
 import 'package:awesome_app/services/photo_services.dart';
 import 'package:awesome_app/shared/theme.dart';
-import 'package:awesome_app/ui/widget/photo_card.dart';
+import 'package:awesome_app/ui/widget/photo_grid_card.dart';
+import 'package:awesome_app/ui/widget/photo_list_card.dart';
+import 'package:awesome_app/ui/widget/photo_list.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
+
+import '../widget/photo_grid.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -17,6 +22,8 @@ class _HomePageState extends State<HomePage> {
   bool isLoading = false;
   bool isFetching = false;
   bool maxReached = false;
+  bool listIsActive = true;
+  bool gridIsActive = false;
 
   @override
   void initState() {
@@ -25,6 +32,7 @@ class _HomePageState extends State<HomePage> {
     context.read<PhotoCubit>().fetchPhotoList();
   }
 
+  //FUNCTION TO FETCH PAGINATION
   Future<void> fetchPagination() async {
     setState(() {
       isLoading = true;
@@ -32,12 +40,50 @@ class _HomePageState extends State<HomePage> {
     await context.read<PhotoCubit>().fetchPhotoListPagination();
   }
 
+  //FUNCTION TO REFRESH
+  Future<void> onRefresh() async {
+    setState(() {
+      isLoading = false;
+    });
+    context.read<PhotoCubit>().fetchPhotoList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    //TO SHOW CIRCULAR PROGRESS INDICATOR WHEN LOADING
+    Widget loadingIndicator() {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+          return Column(
+            children: const [
+              SizedBox(
+                height: 20,
+              ),
+              Center(
+                child: CircularProgressIndicator(
+                  color: greyColor,
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+            ],
+          );
+        }, childCount: 1),
+      );
+    }
+
     Widget backgroundImage() {
-      return Image.network(
-        "https://source.unsplash.com/random",
-        fit: BoxFit.cover,
+      return ClipRRect(
+        borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+        child: CachedNetworkImage(
+          progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+              child: CircularProgressIndicator(
+                  color: greyColor, value: downloadProgress.progress)),
+          imageUrl: "https://source.unsplash.com/random",
+          fit: BoxFit.cover,
+        ),
       );
     }
 
@@ -46,51 +92,24 @@ class _HomePageState extends State<HomePage> {
         listener: (context, state) {
           // TODO: implement listener
           if (state is PhotoSuccess) {
-            print(state.photoList.length);
-            if (state.photoList.length < 10) {
-              setState(() {
-                isLoading = false;
-              });
-            }
+            setState(() {
+              isLoading = false;
+            });
           }
         },
         builder: (context, state) {
           if (state is PhotoLoading) {
-            return SliverList(
-              delegate:
-                  SliverChildBuilderDelegate((BuildContext context, int index) {
-                return Column(
-                  children: [
-                    SizedBox(
-                      height: 20,
-                    ),
-                    const Center(
-                        child: CircularProgressIndicator(
-                      color: Colors.grey,
-                    )),
-                  ],
-                );
-              }, childCount: 1),
-            );
+            return loadingIndicator();
           } else if (state is PhotoSuccess) {
-            return SliverList(
-              delegate:
-                  SliverChildBuilderDelegate((BuildContext context, int index) {
-                return Column(
-                  children: state.photoList
-                      .map((photoData) =>
-                          // CachedNetworkImage(
-                          //       imageUrl: photoData.src.original,
-                          //       fit: BoxFit.cover,
-                          //     ))
-                          // .toList(),
-                          PhotoCard(
-                            photo: photoData,
-                          ))
-                      .toList(),
-                );
-              }, addAutomaticKeepAlives: false, childCount: 1),
-            );
+            if (listIsActive) {
+              return PhotoList(
+                photoList: state.photoList,
+              );
+            } else {
+              return PhotoGrid(
+                photoList: state.photoList,
+              );
+            }
           } else {
             return SliverList(
               delegate:
@@ -110,11 +129,37 @@ class _HomePageState extends State<HomePage> {
     Widget actionIcons() {
       return Row(
         children: [
-          Icon(Icons.list_rounded),
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (!listIsActive) {
+                setState(() {
+                  gridIsActive = !gridIsActive;
+                  listIsActive = !listIsActive;
+                });
+              }
+            },
+            child: Icon(
+              Icons.list_rounded,
+              color: (listIsActive ? activeColor : inactiveColor),
+            ),
+          ),
           SizedBox(
             width: 20,
           ),
-          Icon(Icons.grid_view_rounded),
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (!gridIsActive) {
+                setState(() {
+                  gridIsActive = !gridIsActive;
+                  listIsActive = !listIsActive;
+                });
+              }
+            },
+            child: Icon(Icons.grid_view_rounded,
+                color: (gridIsActive ? activeColor : whiteColor)),
+          ),
           SizedBox(
             width: 16,
           ),
@@ -123,45 +168,38 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
-        body: NotificationListener<ScrollNotification>(
-      onNotification: (scrollNotification) {
-        final metrics = scrollNotification.metrics;
-        if (scrollNotification is ScrollEndNotification) {
-          if (metrics.atEdge) {
-            bool isTop = metrics.pixels == 0;
-            if (isTop) {
-              print('At the top');
-            } else {
-              print('At the bottom');
-
-              //DETECT SCROLL END
-
-              fetchPagination();
-              print('pagination');
-            }
-          }
+        body: LazyLoadScrollView(
+      onEndOfPage: () {
+        //TO PREVENT CALLING fetchPagination TWICE
+        if (!isLoading) {
+          fetchPagination();
+          print('pagination');
         }
-        return true;
       },
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: Colors.transparent,
-            actions: [actionIcons()],
-            pinned: true,
-            centerTitle: true,
-            floating: true,
-            expandedHeight: MediaQuery.of(context).size.height / 3,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              title: Text(
-                'Awesome',
+      child: RefreshIndicator(
+        color: greyColor,
+        onRefresh: onRefresh,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: Colors.transparent,
+              actions: [actionIcons()],
+              pinned: true,
+              floating: true,
+              expandedHeight: MediaQuery.of(context).size.height / 3,
+              flexibleSpace: FlexibleSpaceBar(
+                expandedTitleScale: 2,
+                title: Text(
+                  'Awesome',
+                  style: whiteTextStyle,
+                ),
+                background: backgroundImage(),
               ),
-              background: backgroundImage(),
             ),
-          ),
-          content()
-        ],
+            content(),
+            if (isLoading) loadingIndicator()
+          ],
+        ),
       ),
     ));
   }
