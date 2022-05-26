@@ -1,16 +1,15 @@
 # awesome_app
 
-A new Flutter project.
+Awesome is a photo showcase app that are developed using pexels API, to display collections of photos in the app.
+The documentation can be browsed [here.](https://www.pexels.com/api/documentation/)
 
-## Getting Started
+Browse beautiful and curated photos from around the world!
 
-This project is a starting point for a Flutter application.
+# In a List
+<img src="https://user-images.githubusercontent.com/93133790/170463821-167aa402-4848-4b1d-bdd6-7fbbbaadb4ca.jpg" width="400" height="900">
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+
+<img src="https://user-images.githubusercontent.com/93133790/170463963-924e4c9a-3352-4501-84d7-f248e0c98246.jpg" width="400" height="900">
